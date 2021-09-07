@@ -27,17 +27,13 @@ MASTERS_IPV4=(192.168.119.20 192.168.119.21 192.168.119.22)
 MASTERS_IPV6=(2620:52:0:1001::20 2620:52:0:1001::21 2620:52:0:1001::22)
 MASTERS_MAC_IPV4=(aa:aa:aa:aa:bc:01 aa:aa:aa:aa:bc:02 aa:aa:aa:aa:bc:03)
 MASTERS_MAC_IPV6=(00:03:00:01:aa:aa:aa:aa:bc:01 00:03:00:01:aa:aa:aa:aa:bc:02 00:03:00:01:aa:aa:aa:aa:bc:03)
-#WORKERS_MAC_IPV4=(aa:aa:aa:aa:bd:01 aa:aa:aa:aa:bd:02 aa:aa:aa:aa:bd:03)
-#WORKERS_MAC_IPV6=(00:03:00:01:aa:aa:aa:aa:bd:01 00:03:00:01:aa:aa:aa:aa:bd:02 00:03:00:01:aa:aa:aa:aa:bd:03)
 INSTALLER_MAC_IPV4=aa:aa:aa:aa:bc:00
 INSTALLER_MAC_IPV6=00:03:00:01:aa:aa:aa:aa:bc:00
-#WORKERS=(ipibm-worker-01 ipibm-worker-02 ipibm-worker-03)
 WORKER_MAC_IPV4=aa:aa:aa:aa:bd:0
 WORKER_MAC_IPV6=00:03:00:01:aa:aa:aa:aa:bd:0
 WORKER_IPV4=192.168.119.3
 WORKER_IPV6=2620:52:0:1001::3
 WORKER_NAME=ipibm-worker
-#NUM_WORKERS=2
 RADVD_PREFIX=$(echo $IPIBM_CIDR_IPV6|sed 's/1\//\//g')
 ## ENV VARS ##
 
@@ -170,57 +166,6 @@ EOF
 }
 
 function networks () {
-#  IPV=$1
-#  if [ "${IPV^^}" = "IPV4" ]; then
-#    echo -e "\n+ ipv4 network type selected."
-#    echo -e "+ The network range configured is: ${IPIBM_CIDR_IPV4}"
-#    IPV="ip4"
-#    IPFAMILY="ipv4"
-#    IPIBM_CIDR=${IPIBM_CIDR_IPV4}
-#    IPV4_METHOD="manual"
-#    IPV6_METHOD="disabled"
-#    IPROUTE=${IPIBM_IPV4_IPROUTE}
-#    IPPREFIX=${IPIBM_IPV4_PREFIX}
-#    INSTALLER_IP=${IPIBM_IPV4_INSTALLER_IP}
-#    API_IP=${IPIBM_IPV4_API_IP}
-#    INGRESS_IP=${IPIBM_IPV4_INGRESS_IP}
-#    HOSTIDMAC="host mac"
-#    IP_RANGE_START=192.168.119.2
-#    IP_RANGE_END=192.168.119.254
-#    MASTERS_IP=("${MASTERS_IPV4[@]}")
-#    MASTERS_MAC=("${MASTERS_MAC_IPV4[@]}")
-#    INSTALLER_MAC=${INSTALLER_MAC_IPV4}
-#    WORKER_MAC_IP=${WORKER_MAC_IPV4}
-#    WORKER_IP=${WORKER_IPV4}
-#  else
-#    echo -e "\n+ ipv6 network type selected."
-#    echo -e "+ The network range configured is: ${IPIBM_CIDR_IPV6}"
-#    IPV="ip6"
-#    IPFAMILY="ipv6"
-#    IPIBM_CIDR=${IPIBM_CIDR_IPV6}
-#    IPV4_METHOD="disabled"
-#    IPV6_METHOD="manual"
-#    IPROUTE=${IPIBM_IPV6_IPROUTE}
-#    IPPREFIX=${IPIBM_IPV6_PREFIX}
-#    INSTALLER_IP=${IPIBM_IPV6_INSTALLER_IP}
-#    API_IP=${IPIBM_IPV6_API_IP}
-#    INGRESS_IP=${IPIBM_IPV6_INGRESS_IP}
-#    HOSTIDMAC="host id"
-#    IP_RANGE_START=2620:52:0:1001::2
-#    IP_RANGE_END=2620:52:0:1001::ffff
-#    MASTERS_IP=("${MASTERS_IPV6[@]}")
-#    MASTERS_MAC=("${MASTERS_MAC_IPV6[@]}")
-#    INSTALLER_MAC=${INSTALLER_MAC_IPV6}
-#    WORKER_MAC_IP=${WORKER_MAC_IPV6}
-#    WORKER_IP=${WORKER_IPV6}
-#    #echo -e "+ Installing and starting radvd service..."
-#    #install_radvd
-#  fi
-#
-#  #echo -e "\n+ Creating network with nmcli..."
-#  #nmcli conn add type bridge con-name ${IPIBM_NET} ifname ${IPIBM_NET} autoconnect no ${IPV} ${IPIBM_CIDR} +ipv4.method ${IPV4_METHOD} +ipv4.dns-priority 100 +ipv6.method ${IPV6_METHOD} +ipv6.dns-priority 100 +bridge.forward-delay 2 +bridge.multicast-hash-max 512
-#  #nmcli conn show|grep ${IPIBM_NET}
-
 echo -e "\n+ Defining virsh network and applying configuration..."
 cat << EOF > ${IPIBM_NET}-network.xml
 <network>
@@ -303,18 +248,6 @@ function create_vms () {
     virsh destroy ${m}
     let j++
   done
-
-#  # Workers Installation
-#  echo -e "\n+ Installing worker servers..."
-#  k=0
-#  for w in ${WORKERS[@]}
-#  do
-#    create_image $w
-#    virt-install --virt-type=kvm --name=${w} --ram 16384 --vcpus 8 --hvm --network network=${IPIBM_NET},model=virtio,mac=${WORKERS_MAC_IPV4[k]} --disk ${LIBVIRT_IMGS}/${w}.qcow2,device=disk,bus=scsi,format=qcow2 --os-type Linux --os-variant rhel8.0 --graphics none --import --noautoconsole
-#    sleep 2
-#    virsh destroy ${w}
-#    let k++
-#  done
 
   # Installer deployment
   echo -e "\n+ Installing installer server..."
