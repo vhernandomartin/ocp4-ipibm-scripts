@@ -360,6 +360,7 @@ fi
 ## MENU ##
 
 ## MAIN ##
+
 set_vars ${IP_TYPE}
 create_installer_image
 create_cloud_init_config
@@ -367,4 +368,5 @@ networks
 create_vms
 create_workers
 config_dns_hosts
+
 ## MAIN ##
