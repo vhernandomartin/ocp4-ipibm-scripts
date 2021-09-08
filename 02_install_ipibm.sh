@@ -6,8 +6,6 @@ IPIBM_IPV4_API_IP=192.168.119.10
 IPIBM_IPV4_INGRESS_IP=192.168.119.11
 IPIBM_IPV6_API_IP=2620:52:0:1001::10
 IPIBM_IPV6_INGRESS_IP=2620:52:0:1001::11
-DOMAIN=example.com
-CLUSTER_NAME=lab
 export KUBECONFIG=/root/ocp/auth/kubeconfig
 export OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE=$(cat /root/version.txt)
 
@@ -65,12 +63,30 @@ for i in "$@"; do
     IP_TYPE="${i#*=}"
     shift
     ;;
+    -d=*|--domain=*)
+    DOMAIN="${i#*=}"
+    shift
+    ;;
+    -c=*|--clustername=*)
+    CLUSTER_NAME="${i#*=}"
+    shift
+    ;;
     *)
-    echo -e "\n+ Usage: $0 -n=[IP_TYPE]"
+    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
+    echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
+    echo -e "Provide a valid cluster name, if not present lab will be set as the default cluster name"
     exit 1
   esac
 done
+
+if [[ -z "$DOMAIN" ]]; then
+  DOMAIN=example.com
+fi
+if [[ -z "$CLUSTER_NAME" ]]; then
+  CLUSTER_NAME=lab
+fi
+
 ## MENU ##
 
 ## MAIN ##
