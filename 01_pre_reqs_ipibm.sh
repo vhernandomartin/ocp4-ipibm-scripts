@@ -114,7 +114,7 @@ EOF
   pip3 install sushy-tools
   systemctl enable --now sushy && systemctl status sushy
 
-  echo -e "\n+ Creating the SNO install-config.yaml file..."
+  echo -e "\n+ Creating the install-config.yaml file..."
 cat << EOF > install-config.yaml
 apiVersion: v1
 baseDomain: ${DOMAIN}
