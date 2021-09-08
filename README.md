@@ -22,6 +22,7 @@ Basically, the requirements to be successful in deploying IPI baremetal on a hyp
    - Qemu disk images for master and workers are created and virtual machines configured with specific MAC addresses.
    - DNS records and DHCP reservations are set up in dnsmasq.
    - This is the only script that needs to be executed on the hipervisor, the other scripts are automatically copied to the installer VM, so the next steps will run on that installer VM.
+   - At the execution time you can provide custom domain name and cluster name, in order to set up these values use `-d` and `-c` options.
 
 2. 01_pre_reqs_ipibm.sh - Install the required packages and finish the set up to deploy OpenShift IPI correctly **on the installer VM**. The following tasks are done under the hood:
    - Install some required packages, like libvirt libs and client, ironicclient, some other python modules, httpd, podman, etc.
@@ -32,9 +33,11 @@ Basically, the requirements to be successful in deploying IPI baremetal on a hyp
    - Creates a internal registry for disconnected installations, all required images for installation are placed in that registry, the install-config.yaml file is patched accordingly, so there is no need to go to the Red Hat external registry at the installation time.
    - A new Operator Catalog is created and pushed to the internal registry, to enable the OLM in disconnected environments. In order to build your own Operator Catalog set the variable `OLM_PKGS` accordingly.
    - New machineconfigs created for chrony.
+   - At the execution time you can provide custom domain name and cluster name, in order to set up these values use `-d` , `-c` and `-v` options.
 
 3. 02_install_ipibm.sh - OpenShift 4 IPI Installation.
    - The installation is launched, there is no need of doing any extra step, just wait.
+   - At the execution time you can provide custom domain name and cluster name, in order to set up these values use `-d` and `-c` options.
 
 ## Procedure Execution
 1. Run 00_create_ipibm_infra.sh on the hypervisor.
@@ -42,28 +45,28 @@ Here you can find some examples:
 
    * ipv6 deployments with 1 worker node.
 
-   `/root/00_create_ipibm_infra.sh -n=ipv6 -w=1`
+   `/root/00_create_ipibm_infra.sh -n=ipv6 -w=1 -d=domtest.com -c=testlab`
 
    * ipv4 deployments with 4 worker node.
 
-   `/root/00_create_ipibm_infra.sh -n=ipv4 -w=4`
+   `/root/00_create_ipibm_infra.sh -n=ipv4 -w=4 -d=domtest.com -c=testlab`
 
 2. ssh to the installer VM and run 01_pre_reqs_ipibm.sh.
 
-   * ipv6 deployments with 1 worker node.
+   * ipv6 deployments with 1 worker node, deploying OpenShift 4.7.
 
-   `/root/01_pre_reqs_ipibm.sh -n=ipv6 -w=1`
+   `/root/01_pre_reqs_ipibm.sh -n=ipv6 -w=1 -d=domtest.com -c=testlab -v=4.7`
 
-   * ipv4 deployments with 4 worker node.
+   * ipv4 deployments with 4 worker node, deploying OpenShift 4.8.
 
-   `/root/01_pre_reqs_ipibm.sh -n=ipv4 -w=4`
+   `/root/01_pre_reqs_ipibm.sh -n=ipv4 -w=4 -d=domtest.com -c=testlab -v=4.8`
 
 3. From the installer VM run 02_install_ipibm.sh
 
    * ipv6 deployments.
 
-   `/root/02_install_ipibm.sh -n=ipv6`
+   `/root/02_install_ipibm.sh -n=ipv6 -d=domtest.com -c=testlab`
 
    * ipv4 deployments.
 
-   `/root/02_install_ipibm.sh -n=ipv4`
+   `/root/02_install_ipibm.sh -n=ipv4 -d=domtest.com -c=testlab`
