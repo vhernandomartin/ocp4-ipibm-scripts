@@ -21,8 +21,6 @@ DEF_CNET_HOST_PREFIX_IPV6=64
 IPIBM_NET=lab-ipibm
 PULL_SECRET_FILE="/root/openshift_pull.json"
 NEW_PULL_SECRET_FILE="/root/new_openshift_pull.json"
-OPENSHIFT_RELEASE_IMAGE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-4.8/release.txt | grep 'Pull From: quay.io' | awk -F ' ' '{print $3}')
-OCP_RELEASE=4.8-x86_64
 
 ## VARS ##
 
@@ -36,6 +34,8 @@ function install_pkgs () {
 }
 
 function set_vars () {
+  OPENSHIFT_RELEASE_IMAGE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-${OCP4_VER}/release.txt | grep 'Pull From: quay.io' | awk -F ' ' '{print $3}')
+  OCP_RELEASE=${OCP4_VER}-x86_64
   IP_TYPE=$1
   if [ "${IP_TYPE}" = "ipv4" ]; then
     echo -e "+ Setting vars for a ipv4 cluster."
@@ -116,7 +116,7 @@ EOF
   echo -e "\n+ Creating the SNO install-config.yaml file..."
 cat << EOF > install-config.yaml
 apiVersion: v1
-baseDomain: example.com
+baseDomain: ${DOMAIN}
 networking:
   networkType: OVNKubernetes
   machineNetwork:
@@ -127,7 +127,7 @@ networking:
   serviceNetwork:
   - ${IPIBM_SNET_CIDR}
 metadata:
-  name: lab
+  name: ${CLUSTER_NAME}
 compute:
 - name: worker
   replicas: ${NUM_WORKERS}
@@ -476,13 +476,36 @@ for i in "$@"; do
     NUM_WORKERS="${i#*=}"
     shift
     ;;
+    -d=*|--domain=*)
+    DOMAIN="${i#*=}"
+    shift
+    ;;
+    -c=*|--clustername=*)
+    CLUSTER_NAME="${i#*=}"
+    shift
+    ;;
+    -v=*|--version=*)
+    OCP4_VER="${i#*=}"
+    shift
+    ;;
     *)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS>"
+    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME> -v=<OCP4_VERSION>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
+    echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
+    echo -e "Provide a valid cluster name, if not present lab will be set as the default cluster name"
+    echo -e "OpenShift 4 minor version only allowed, i.e. 4.6, 4.7, 4.8... "
     exit 1
   esac
 done
+
+if [[ -z "$DOMAIN" ]]; then
+  DOMAIN=example.com
+fi
+if [[ -z "$CLUSTER_NAME" ]]; then
+  CLUSTER_NAME=lab
+fi
+
 ## MENU ##
 
 ## MAIN ##
