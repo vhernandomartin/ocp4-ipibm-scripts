@@ -36,6 +36,7 @@ function install_pkgs () {
 function set_vars () {
   OPENSHIFT_RELEASE_IMAGE=$(curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-${OCP4_VER}/release.txt | grep 'Pull From: quay.io' | awk -F ' ' '{print $3}')
   OCP_RELEASE=${OCP4_VER}-x86_64
+  MINOR_VERSION=$(echo ${OCP4_VER}|cut -d "." -f 2)
   IP_TYPE=$1
   if [ "${IP_TYPE}" = "ipv4" ]; then
     echo -e "+ Setting vars for a ipv4 cluster."
@@ -236,7 +237,7 @@ function lab_installation () {
   systemctl enable httpd --now
 
   echo -e "\n+ Downloading oc client and installer..."
-  curl -k https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz > oc.tar.gz
+  curl -k https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable-${OCP4_VER}/openshift-client-linux.tar.gz > oc.tar.gz
   tar zxvf oc.tar.gz
   mv oc /usr/bin
   chmod 755 /usr/bin/oc
@@ -266,11 +267,23 @@ function patch_install_config () {
 
 function installation_images_cache () {
   echo -e "\n+ Downloading RHCOS images and placing them in the httpd web server ready to be served."
+  if [ "${MINOR_VERSION}" -lt "8" ]; then
+    echo -e "+ Minor version prior 4.8"
+    COMMIT_ID=$(openshift-baremetal-install version|grep "built from commit"|awk '{print $4}')
+    RHCOS_OSP_URL=$(curl -s -S https://raw.githubusercontent.com/openshift/installer/${COMMIT_ID}/data/data/rhcos.json  | jq .images.openstack.path | sed 's/"//g')
+    RHCOS_QEMU_URL=$(curl -s -S https://raw.githubusercontent.com/openshift/installer/${COMMIT_ID}/data/data/rhcos.json  | jq .images.qemu.path | sed 's/"//g')
+    RHCOS_QEMU_SHA=$(curl -s -S https://raw.githubusercontent.com/openshift/installer/$COMMIT_ID/data/data/rhcos.json  | jq -r '.images.qemu["uncompressed-sha256"]')
+    RHCOS_OSP_SHA=$(curl -s -S https://raw.githubusercontent.com/openshift/installer/$COMMIT_ID/data/data/rhcos.json  | jq -r '.images.openstack.sha256')
+  else
+    echo -e "+ Minor version 4.8 or later"
+    RHCOS_OSP_URL=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.openstack.formats["qcow2.gz"].disk.location')
+    RHCOS_QEMU_URL=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.qemu.formats["qcow2.gz"].disk.location')
+    RHCOS_QEMU_SHA=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.qemu.formats["qcow2.gz"].disk["uncompressed-sha256"]')
+    RHCOS_OSP_SHA=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.openstack.formats["qcow2.gz"].disk["sha256"]')
+  fi
+
   cd /var/www/html
-  RHCOS_OSP_URL=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.openstack.formats["qcow2.gz"].disk.location')
-  RHCOS_QEMU_URL=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.qemu.formats["qcow2.gz"].disk.location')
-  RHCOS_QEMU_SHA=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.qemu.formats["qcow2.gz"].disk["uncompressed-sha256"]')
-  RHCOS_OSP_SHA=$(openshift-baremetal-install coreos print-stream-json | jq -r '.architectures.x86_64.artifacts.openstack.formats["qcow2.gz"].disk["sha256"]')
+
   RHCOS_OSP_IMG=$(basename $RHCOS_OSP_URL)
   RHCOS_QEMU_IMG=$(basename $RHCOS_QEMU_URL)
   curl -L $RHCOS_OSP_URL > $RHCOS_OSP_IMG
