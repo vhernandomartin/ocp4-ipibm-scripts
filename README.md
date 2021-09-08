@@ -1,7 +1,8 @@
 # ocp4-ipibm-scripts
 
 ## Description
-Disclaimer: This procedure **is not officially supported**, it has been written just for testing purposes.
+
+**Disclaimer: This procedure is not officially supported, it has been written just for testing purposes.**
 
 This repository contains a set of scripts to deploy OpenShift 4 Installer-Provisioned installation (IPI) on Baremetal.
 Since it may be difficult to count on having many bare metal servers to deploy OpenShift, this procedure helps with the IPI bare metal deployment on a virtualized environment.
@@ -16,46 +17,54 @@ Basically, the requirements to be successful in deploying IPI baremetal on a hyp
 
 ## Procedure details
 1. 00_create_ipibm_infra.sh - Create IPI bare metal infrastructure on the hypervisor. On this first stage the following assets will be created:
-  1.1. Virtual Machines, you have to specify how many workers you want to deploy (1-9).
-  1.2. Virtual Networks, based on your network type (ipv4/ipv6) a new virtual network will be deployed, network name is hardcoded, but you can edit the scripts and change the network name. Network ranges can be changed as well editing the corresponding parameters.
-  1.3. Install the installer server, this is the VM we'll use to deploy the whole cluster, avoiding messing the hypervisor. This VM is installed with a CentOS image downloaded by this same process.
-  1.4. Qemu disk images for master and workers are created and virtual machines configured with specific MAC addresses.
-  1.5. DNS records and DHCP reservations are set up in dnsmasq.
-  1.6. This is the only script that needs to be executed on the hipervisor, the other scripts are automatically copied to the installer VM, so the next steps will run on that installer VM.
+  1. Virtual Machines, you have to specify how many workers you want to deploy (1-9).
+  1. Virtual Networks, based on your network type (ipv4/ipv6) a new virtual network will be deployed, network name is hardcoded, but you can edit the scripts and change the network name. Network ranges can be changed as well editing the corresponding parameters.
+  1. Install the installer server, this is the VM we'll use to deploy the whole cluster, avoiding messing the hypervisor. This VM is installed with a CentOS image downloaded by this same process.
+  1. Qemu disk images for master and workers are created and virtual machines configured with specific MAC addresses.
+  1. DNS records and DHCP reservations are set up in dnsmasq.
+  1. This is the only script that needs to be executed on the hipervisor, the other scripts are automatically copied to the installer VM, so the next steps will run on that installer VM.
+
 2. 01_pre_reqs_ipibm.sh - Install the required packages and finish the set up to deploy OpenShift IPI correctly **on the installer VM**. The following tasks are done under the hood:
-  2.1. Install some required packages, like libvirt libs and client, ironicclient, some other python modules, httpd, podman, etc.
-  2.2. Install and configure the sushy service - Virtual Redfish, to emulate bare metal machines by means of virtual machines. That way the installer will be able to power on, power off and manipulate the VMs as if it were bare metal servers.
-  2.3. Create the install-config.yaml file, based on the specified parameters, number of workers, whether ipv4 or ipv6 was selected, etc. **It is required to paste your own pull secret, replace it with <INSERT_YOUR_PULL_SECRETS_HERE> line**
-  2.4. Downloads oc and OpenShift installer client based on the OpenShift release.
-  2.5. Downloads RHCOS images, and places them in the httpd server to act as a cache, that way we reduce the installation time.
-  2.6. Creates a internal registry for disconnected installations, all required images for installation are placed in that registry, the install-config.yaml file is patched accordingly, so there is no need to go to the Red Hat external registry at the installation time.
-  2.7. A new Operator Catalog is created and pushed to the internal registry, to enable the OLM in disconnected environments. In order to build your own Operator Catalog set the variable `OLM_PKGS` accordingly.
-  2.8. New machineconfigs created for chrony.
+  2. Install some required packages, like libvirt libs and client, ironicclient, some other python modules, httpd, podman, etc.
+  2. Install and configure the sushy service - Virtual Redfish, to emulate bare metal machines by means of virtual machines. That way the installer will be able to power on, power off and manipulate the VMs as if it were bare metal servers.
+  2. Create the install-config.yaml file, based on the specified parameters, number of workers, whether ipv4 or ipv6 was selected, etc. **It is required to paste your own pull secret, replace it with <INSERT_YOUR_PULL_SECRETS_HERE> line**
+  2. Downloads oc and OpenShift installer client based on the OpenShift release.
+  2. Downloads RHCOS images, and places them in the httpd server to act as a cache, that way we reduce the installation time.
+  2. Creates a internal registry for disconnected installations, all required images for installation are placed in that registry, the install-config.yaml file is patched accordingly, so there is no need to go to the Red Hat external registry at the installation time.
+  2. A new Operator Catalog is created and pushed to the internal registry, to enable the OLM in disconnected environments. In order to build your own Operator Catalog set the variable `OLM_PKGS` accordingly.
+  2. New machineconfigs created for chrony.
+
 3. 02_install_ipibm.sh - OpenShift 4 IPI Installation.
-  3.1. The installation is launched, there is no need of doing any extra step, just wait.
+  3. The installation is launched, there is no need of doing any extra step, just wait.
 
 ## Procedure Execution
 1. Run 00_create_ipibm_infra.sh on the hypervisor.
 Here you can find some examples:
 
 * ipv6 deployments with 1 worker node.
+
 `/root/00_create_ipibm_infra.sh -n=ipv6 -w=1`
 
 * ipv4 deployments with 4 worker node.
+
 `/root/00_create_ipibm_infra.sh -n=ipv4 -w=4`
 
 2. ssh to the installer VM and run 01_pre_reqs_ipibm.sh.
 
 * ipv6 deployments with 1 worker node.
+
 `/root/01_pre_reqs_ipibm.sh -n=ipv6 -w=1`
 
 * ipv4 deployments with 4 worker node.
+
 `/root/01_pre_reqs_ipibm.sh -n=ipv4 -w=4`
 
 3. From the installer VM run 02_install_ipibm.sh
 
-* ipv6 deployments
+* ipv6 deployments.
+
 `/root/02_install_ipibm.sh -n=ipv6`
 
-* ipv4 deployments
+* ipv4 deployments.
+
 `/root/02_install_ipibm.sh -n=ipv4`
