@@ -18,6 +18,10 @@ IPIBM_IPV6_PREFIX=64
 IPIBM_IPV6_INSTALLER_IP=2620:52:0:1001::100
 IPIBM_IPV6_API_IP=2620:52:0:1001::10
 IPIBM_IPV6_INGRESS_IP=2620:52:0:1001::11
+IPV4_RANGE_START=192.168.119.2
+IPV4_RANGE_END=192.168.119.254
+IPV6_RANGE_START=2620:52:0:1001::2
+IPV6_RANGE_END=2620:52:0:1001::ffff
 ID_RSA_PUB=$(cat /root/.ssh/id_rsa.pub)
 MASTERS=(ipibm-master-01 ipibm-master-02 ipibm-master-03)
 MASTERS_IPV4=(192.168.119.20 192.168.119.21 192.168.119.22)
@@ -51,8 +55,8 @@ function set_vars () {
     API_IP=${IPIBM_IPV4_API_IP}
     INGRESS_IP=${IPIBM_IPV4_INGRESS_IP}
     HOSTIDMAC="host mac"
-    IP_RANGE_START=192.168.119.2
-    IP_RANGE_END=192.168.119.254
+    IP_RANGE_START=${IPV4_RANGE_START}
+    IP_RANGE_END=${IPV4_RANGE_END}
     MASTERS_IP=("${MASTERS_IPV4[@]}")
     MASTERS_MAC=("${MASTERS_MAC_IPV4[@]}")
     INSTALLER_MAC=${INSTALLER_MAC_IPV4}
@@ -72,8 +76,8 @@ function set_vars () {
     API_IP=${IPIBM_IPV6_API_IP}
     INGRESS_IP=${IPIBM_IPV6_INGRESS_IP}
     HOSTIDMAC="host id"
-    IP_RANGE_START=2620:52:0:1001::2
-    IP_RANGE_END=2620:52:0:1001::ffff
+    IP_RANGE_START=${IPV6_RANGE_START}
+    IP_RANGE_END=${IPV6_RANGE_END}
     MASTERS_IP=("${MASTERS_IPV6[@]}")
     MASTERS_MAC=("${MASTERS_MAC_IPV6[@]}")
     INSTALLER_MAC=${INSTALLER_MAC_IPV6}
@@ -257,7 +261,7 @@ function config_dns_hosts () {
   check_binary virsh
   while [[ ${IP} = "" ]]
   do
-    IP=$(virsh net-dhcp-leases lab-ipibm |grep ${INSTALLER_MAC_IPV4}|tail -1|awk '{print $5}'|cut -d "/" -f 1)
+    IP=$(virsh net-dhcp-leases ${IPIBM_NET} |grep ${INSTALLER_MAC_IPV4}|tail -1|awk '{print $5}'|cut -d "/" -f 1)
     echo -e "+ Waiting to grab an IP from DHCP..."
     sleep 5
   done
@@ -319,9 +323,11 @@ fi
 for i in "$@"; do
   case $i in
     -h=*|--help=*)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS>"
+    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
+    echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
+    echo -e "Provide a valid cluster name, if not present lab will be set as the default cluster name"
     exit 0
     ;;
     -n=*|--net=*)
