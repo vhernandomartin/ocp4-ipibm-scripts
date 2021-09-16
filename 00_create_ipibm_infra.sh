@@ -281,7 +281,7 @@ function copy_id_rsa () {
 function copy_install_files () {
   IP=$1
   echo -e "\n+ Copying install files to ${INSTALLER_VM} with IP: ${IP} ..."
-  scp /root/01_pre_reqs_ipibm.sh /root/02_install_ipibm.sh /root/find_redfish_host.sh root@[${IP}]:/root/.
+  scp 01_pre_reqs_ipibm.sh 02_install_ipibm.sh find_redfish_host.sh root@[${IP}]:/root/.
 }
 
 function install_radvd () {

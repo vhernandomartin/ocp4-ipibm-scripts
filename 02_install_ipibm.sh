@@ -42,7 +42,7 @@ function deploy_openshift () {
   echo ${IPIBM_API_IP} api api.${CLUSTER_NAME}.${DOMAIN} api-int.${CLUSTER_NAME}.${DOMAIN} >> /etc/hosts
 
   openshift-baremetal-install --dir ocp --log-level debug create cluster
-  openshift-baremetal-install --dir ocp --log-level debug wait-for install-complete || openshift-baremetal-install --dir ocp --log-level debug wait-for install-complete
+  openshift-baremetal-install --dir ocp --log-level debug wait-for install-complete || openshift-baremetal-install --dir ocp --log-level debug wait-for install-complete
 }
 ## FUNCTIONS ##
 

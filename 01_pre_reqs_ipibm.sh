@@ -49,8 +49,8 @@ function set_vars () {
     IPIBM_CNET_CIDR=$IPIBM_CNET_CIDR_IPV4
     IPIBM_SNET_CIDR=$IPIBM_SNET_CIDR_IPV4
     DEF_CNET_HOST_PREFIX=$DEF_CNET_HOST_PREFIX_IPV4
-    IP=$(ip addr show|grep inet|grep "scope global"|grep -w $NET_TYPE|awk '{print $2}'|cut -d "/" -f 1)
-    NAMESERVER=$(grep nameserver /etc/resolv.conf |grep -v ":"|awk '{print $2}')
+    IP=$(ip addr show|grep inet|grep "scope global"|grep -w $NET_TYPE|awk '{print $2}'|cut -d "/" -f 1|tail -1)
+    NAMESERVER=$(grep nameserver /etc/resolv.conf |grep -v ":"|awk '{print $2}'|tail -1)
     PTR_RECORD=$(dig -x ${IP} @${NAMESERVER} +short)
   elif [ "${IP_TYPE}" = "ipv6" ]; then
     echo -e "+ Setting vars for a ipv6 cluster."
@@ -290,8 +290,8 @@ function installation_images_cache () {
     curl -L ${RHCOS_QEMU_URL} > ${RHCOS_QEMU_IMG}
   fi
 
-  sed -i '/baremetal/a\    clusterOSImage: http://'"[${IP}]"'/'"${RHCOS_OSP_IMG}"'?sha256='"${RHCOS_OSP_SHA}"'' /root/install-config.yaml
-  sed -i '/baremetal/a\    bootstrapOSImage: http://'"[${IP}]"'/'"${RHCOS_QEMU_IMG}"'?sha256='"${RHCOS_QEMU_SHA}"'' /root/install-config.yaml
+  sed -i '/baremetal/a\    clusterOSImage: http://'"${IP}"'/'"${RHCOS_OSP_IMG}"'?sha256='"${RHCOS_OSP_SHA}"'' /root/install-config.yaml
+  sed -i '/baremetal/a\    bootstrapOSImage: http://'"${IP}"'/'"${RHCOS_QEMU_IMG}"'?sha256='"${RHCOS_QEMU_SHA}"'' /root/install-config.yaml
 
 }
 
@@ -368,7 +368,7 @@ EOF
   RH_USER=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 1)
   RH_PASSWD=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 2)
   #OLM_PKGS="advanced-cluster-management,cluster-logging,elasticsearch-operator,kubernetes-nmstate-operator,metering-ocp,performance-addon-operator,rhacs-operator"
-  OLM_PKGS="cluster-logging,elasticsearch-operator"
+  OLM_PKGS="advanced-cluster-management,kubernetes-nmstate-operator"
 
   podman login -u ${REG_USER} -p ${REG_PASSWD} ${REGISTRY_NAME}:5000
   podman login -u ${RH_USER} -p ${RH_PASSWD} registry.redhat.io
