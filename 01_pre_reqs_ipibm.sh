@@ -338,7 +338,7 @@ EOF
   podman start registry
   mv ${NEW_PULL_SECRET_FILE} ${PULL_SECRET_FILE}
   echo -e "+ Mirroring the release to the new local registry ${REGISTRY_NAME}:5000..."
-  oc adm release mirror -a ${PULL_SECRET_FILE} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${REGISTRY_NAME}:5000/ocp4/release:${OCP_RELEASE} --to=${REGISTRY_NAME}:5000/ocp4
+  oc adm release mirror -a ${PULL_SECRET_FILE} --from=${OPENSHIFT_RELEASE_IMAGE} --to-release-image=${REGISTRY_NAME}:5000/ocp4:${OCP_RELEASE} --to=${REGISTRY_NAME}:5000/ocp4
   echo -e "+ Setting the new imageConentSources in the install-config.yaml file ..."
   sed -i '/pullSecret/,$d' /root/install-config.yaml
   cat << EOF >> /root/install-config.yaml
@@ -368,7 +368,7 @@ EOF
   RH_USER=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 1)
   RH_PASSWD=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 2)
   #OLM_PKGS="advanced-cluster-management,cluster-logging,elasticsearch-operator,kubernetes-nmstate-operator,metering-ocp,performance-addon-operator,rhacs-operator"
-  OLM_PKGS="advanced-cluster-management,kubernetes-nmstate-operator"
+  OLM_PKGS="advanced-cluster-management,kubernetes-nmstate-operator,local-storage-operator"
 
   podman login -u ${REG_USER} -p ${REG_PASSWD} ${REGISTRY_NAME}:5000
   podman login -u ${RH_USER} -p ${RH_PASSWD} registry.redhat.io
@@ -382,7 +382,7 @@ EOF
   echo -e "\n+ Pushing the new image ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} ..."
   podman push ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} --authfile ${PULL_SECRET_FILE}
   echo -e "\n+ Mirroring the operator catalog..."
-  oc adm catalog mirror ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} ${REGISTRY_NAME}:5000/olm --registry-config=${PULL_SECRET_FILE}
+  oc adm catalog mirror ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} ${REGISTRY_NAME}:5000 --registry-config=${PULL_SECRET_FILE}
   echo -e "\n+ New manifests have been created and placed in :"
   ls -l /root/manifests-redhat-operator-index*
   echo -e "\n+ Moving these manifests to /root/manifests :"

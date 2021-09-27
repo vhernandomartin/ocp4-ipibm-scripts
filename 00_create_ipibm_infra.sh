@@ -40,6 +40,7 @@ RADVD_PREFIX=$(echo $IPIBM_CIDR_IPV6|sed 's/1\//\//g')
 
 function set_vars () {
   OCP_DOMAIN=${CLUSTER_NAME}.${DOMAIN}
+  PWD=$(/usr/bin/pwd)
   IP_TYPE=$1
   if [ "${IP_TYPE}" = "ipv4" ]; then
     echo -e "+ Setting vars for a ipv4 cluster."
@@ -281,7 +282,7 @@ function copy_id_rsa () {
 function copy_install_files () {
   IP=$1
   echo -e "\n+ Copying install files to ${INSTALLER_VM} with IP: ${IP} ..."
-  scp 01_pre_reqs_ipibm.sh 02_install_ipibm.sh find_redfish_host.sh root@[${IP}]:/root/.
+  scp ${PWD}/01_pre_reqs_ipibm.sh ${PWD}/02_install_ipibm.sh ${PWD}/find_redfish_host.sh root@[${IP}]:/root/.
 }
 
 function install_radvd () {
