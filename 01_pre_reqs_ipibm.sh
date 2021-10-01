@@ -290,9 +290,13 @@ function installation_images_cache () {
     curl -L ${RHCOS_QEMU_URL} > ${RHCOS_QEMU_IMG}
   fi
 
-  sed -i '/baremetal/a\    clusterOSImage: http://'"${IP}"'/'"${RHCOS_OSP_IMG}"'?sha256='"${RHCOS_OSP_SHA}"'' /root/install-config.yaml
-  sed -i '/baremetal/a\    bootstrapOSImage: http://'"${IP}"'/'"${RHCOS_QEMU_IMG}"'?sha256='"${RHCOS_QEMU_SHA}"'' /root/install-config.yaml
-
+  if [ "${IP_TYPE}" = "ipv4" ]; then
+    sed -i '/baremetal/a\    clusterOSImage: http://'"${IP}"'/'"${RHCOS_OSP_IMG}"'?sha256='"${RHCOS_OSP_SHA}"'' /root/install-config.yaml
+    sed -i '/baremetal/a\    bootstrapOSImage: http://'"${IP}"'/'"${RHCOS_QEMU_IMG}"'?sha256='"${RHCOS_QEMU_SHA}"'' /root/install-config.yaml
+  else
+    sed -i '/baremetal/a\    clusterOSImage: http://'"[${IP}]"'/'"${RHCOS_OSP_IMG}"'?sha256='"${RHCOS_OSP_SHA}"'' /root/install-config.yaml
+    sed -i '/baremetal/a\    bootstrapOSImage: http://'"[${IP}]"'/'"${RHCOS_QEMU_IMG}"'?sha256='"${RHCOS_QEMU_SHA}"'' /root/install-config.yaml
+  fi
 }
 
 function create_registry () {
@@ -354,7 +358,7 @@ EOF
   echo "additionalTrustBundle: |" >> /root/install-config.yaml
   sed -e 's/^/  /' /opt/registry/certs/domain.crt >>  /root/install-config.yaml
 
-  echo $REGISTRY_NAME:5000/ocp4/release:$OCP_RELEASE > /root/version.txt
+  echo $REGISTRY_NAME:5000/ocp4:$OCP_RELEASE > /root/version.txt
 
   OCP_PULL_SECRET=$(cat ${PULL_SECRET_FILE} | tr -d [:space:])
   echo -e "pullSecret: |\n  ${OCP_PULL_SECRET}" >> /root/install-config.yaml
@@ -477,8 +481,8 @@ fi
 
 for i in "$@"; do
   case $i in
-    -h=*|--help=*)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS>"
+    -h|--help)
+    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
     exit 0
@@ -504,7 +508,7 @@ for i in "$@"; do
     shift
     ;;
     *)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME> -v=<OCP4_VERSION>"
+    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME> -v=<OCP4_VERSION>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
     echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
