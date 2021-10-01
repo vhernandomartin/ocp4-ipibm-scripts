@@ -40,7 +40,6 @@ RADVD_PREFIX=$(echo $IPIBM_CIDR_IPV6|sed 's/1\//\//g')
 
 function set_vars () {
   OCP_DOMAIN=${CLUSTER_NAME}.${DOMAIN}
-  PWD=$(/usr/bin/pwd)
   IP_TYPE=$1
   if [ "${IP_TYPE}" = "ipv4" ]; then
     echo -e "+ Setting vars for a ipv4 cluster."
@@ -282,7 +281,7 @@ function copy_id_rsa () {
 function copy_install_files () {
   IP=$1
   echo -e "\n+ Copying install files to ${INSTALLER_VM} with IP: ${IP} ..."
-  scp ${PWD}/01_pre_reqs_ipibm.sh ${PWD}/02_install_ipibm.sh ${PWD}/find_redfish_host.sh root@[${IP}]:/root/.
+  scp ${SCRIPT_PATH}/01_pre_reqs_ipibm.sh ${SCRIPT_PATH}/02_install_ipibm.sh ${SCRIPT_PATH}/find_redfish_host.sh root@[${IP}]:/root/.
 }
 
 function install_radvd () {
@@ -323,7 +322,7 @@ fi
 
 for i in "$@"; do
   case $i in
-    -h=*|--help=*)
+    -h|--help)
     echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
@@ -364,6 +363,7 @@ if [[ -z "$CLUSTER_NAME" ]]; then
   CLUSTER_NAME=lab
 fi
 
+SCRIPT_PATH=$(dirname $(realpath $0))
 ## MENU ##
 
 ## MAIN ##
