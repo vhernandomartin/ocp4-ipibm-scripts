@@ -323,7 +323,7 @@ fi
 for i in "$@"; do
   case $i in
     -h|--help)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
+    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
     echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
@@ -347,7 +347,7 @@ for i in "$@"; do
     shift
     ;;
     *)
-    echo -e "\n+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
+    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
     echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
