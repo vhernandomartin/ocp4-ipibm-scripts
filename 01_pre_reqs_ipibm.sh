@@ -373,6 +373,7 @@ EOF
   RH_PASSWD=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 2)
   #OLM_PKGS="advanced-cluster-management,cluster-logging,elasticsearch-operator,kubernetes-nmstate-operator,metering-ocp,performance-addon-operator,rhacs-operator"
   OLM_PKGS="advanced-cluster-management,kubernetes-nmstate-operator,local-storage-operator"
+  PARSED_OLM_PKGS=$(echo $OLM_PKGS|sed 's/,/ /g')
 
   podman login -u ${REG_USER} -p ${REG_PASSWD} ${REGISTRY_NAME}:5000
   podman login -u ${RH_USER} -p ${RH_PASSWD} registry.redhat.io
@@ -382,7 +383,20 @@ EOF
 
   OCP_VERSION=$(echo ${OCP_RELEASE}|cut -d "-" -f 1)
   echo -e "\+ pruning the source index of all but the specified packages..."
-  opm index prune -f registry.redhat.io/redhat/redhat-operator-index:v${OCP_VERSION} -p ${OLM_PKGS} -t ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION}
+
+  if [ "${MINOR_VERSION}" -lt "11" ]; then
+    opm index prune -f registry.redhat.io/redhat/redhat-operator-index:v${OCP_VERSION} -p ${OLM_PKGS} -t ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION}
+  else
+    mkdir -p pruned-catalog/configs
+    for olmpkg in ${PARSED_OLM_PKGS[@]}
+    do
+      opm render registry.redhat.io/redhat/redhat-operator-index:v${OCP_VERSION} | jq 'select( .package == "'"$olmpkg"'" or .name == "'"$olmpkg"'")' >> pruned-catalog/configs/index.json
+    done
+
+    opm generate dockerfile pruned-catalog/configs && cd pruned-catalog/
+    podman build -t ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} -f configs.Dockerfile .
+  fi
+
   echo -e "\n+ Pushing the new image ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} ..."
   podman push ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} --authfile ${PULL_SECRET_FILE}
   echo -e "\n+ Mirroring the operator catalog..."
