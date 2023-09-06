@@ -30,9 +30,8 @@ function install_pkgs () {
   sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
   sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
   dnf swap centos-linux-repos centos-stream-repos -y
-  dnf clean all && sleep 30 && dnf -y install pkgconf-pkg-config libvirt-devel gcc python3-libvirt python3 git python3-netifaces bind-utils
+  dnf clean all && sleep 30 && dnf -y install pkgconf-pkg-config libvirt-devel python36 python3-pip gcc python3-libvirt python3 git python3-netifaces bind-utils
   dnf -y install libvirt-libs libvirt-client ipmitool mkisofs tmux make git bash-completion
-  dnf -y install python39
   dnf -y install jq
 }
 
@@ -114,7 +113,8 @@ SUSHY_EMULATOR_BOOT_LOADER_MAP = {
 EOF
 
   echo -e "\n+ Installing some required packages..."
-  pip3 install sushy-tools
+  pip3 install --upgrade pip
+  pip3 install sushy-tools --ignore-installed PyYAML
   systemctl enable --now sushy && systemctl status sushy
 
   echo -e "\n+ Creating the install-config.yaml file..."
