@@ -372,7 +372,7 @@ EOF
   RH_USER=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 1)
   RH_PASSWD=$(echo ${RH_USER_PASSWD}|cut -d ":" -f 2)
   #OLM_PKGS="advanced-cluster-management,cluster-logging,elasticsearch-operator,kubernetes-nmstate-operator,metering-ocp,performance-addon-operator,rhacs-operator"
-  OLM_PKGS="advanced-cluster-management,kubernetes-nmstate-operator,local-storage-operator"
+  OLM_PKGS="rhacs-operator,local-storage-operator,openshift-gitops-operator,openshift-pipelines-operator-rh,quay-operator"
   PARSED_OLM_PKGS=$(echo $OLM_PKGS|sed 's/,/ /g')
 
   podman login -u ${REG_USER} -p ${REG_PASSWD} ${REGISTRY_NAME}:5000

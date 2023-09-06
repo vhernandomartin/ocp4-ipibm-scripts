@@ -125,7 +125,7 @@ function create_image () {
   SERVERNAME=$1
   # Creating qcow images for server $SERVERNAME
   check_binary qemu-img
-  qemu-img create -f qcow2 ${LIBVIRT_IMGS}/${SERVERNAME}.qcow2 40G
+  qemu-img create -f qcow2 ${LIBVIRT_IMGS}/${SERVERNAME}.qcow2 100G
 }
 
 function create_cloud_init_config () {
