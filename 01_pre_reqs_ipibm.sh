@@ -496,9 +496,12 @@ fi
 for i in "$@"; do
   case $i in
     -h|--help)
-    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS>"
+    echo -e "+ Usage: $0 -n=<IP_TYPE> -w=<NUM_WORKERS> -d=<DOMAIN_NAME> -c=<CLUSTER_NAME> -v=<OCP4_VERSION>"
     echo -e "Valid IP_TYPE values: ipv4/ipv6"
     echo -e "Valid number of workers 1-9"
+    echo -e "Provide a valid domain name, if not present example.com will be set as the default domain"
+    echo -e "Provide a valid cluster name, if not present lab will be set as the default cluster name"
+    echo -e "OpenShift 4 minor version only allowed, i.e. 4.6, 4.7, 4.8... "
     exit 0
     ;;
     -n=*|--net=*)
