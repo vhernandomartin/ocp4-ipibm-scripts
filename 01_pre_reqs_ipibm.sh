@@ -27,9 +27,12 @@ NEW_PULL_SECRET_FILE="/root/new_openshift_pull.json"
 ## FUNCTIONS ##
 
 function install_pkgs () {
+  sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+  sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+  dnf swap centos-linux-repos centos-stream-repos -y
   dnf clean all && sleep 30 && dnf -y install pkgconf-pkg-config libvirt-devel gcc python3-libvirt python3 git python3-netifaces bind-utils
   dnf -y install libvirt-libs libvirt-client ipmitool mkisofs tmux make git bash-completion
-  dnf -y install python36
+  dnf -y install python39
   dnf -y install jq
 }
 
