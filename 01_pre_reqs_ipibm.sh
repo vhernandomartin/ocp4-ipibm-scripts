@@ -398,6 +398,7 @@ EOF
 
     opm generate dockerfile pruned-catalog/configs && cd pruned-catalog/
     podman build -t ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} -f configs.Dockerfile .
+    cd ../
   fi
 
   echo -e "\n+ Pushing the new image ${REGISTRY_NAME}:5000/olm-index/redhat-operator-index:v${OCP_VERSION} ..."
